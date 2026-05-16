@@ -1,0 +1,43 @@
+name: Build JumpOnHit DLL
+
+on:
+  push:
+    branches: ["*"]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup MSVC
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: x64
+
+      - name: Install Ninja
+        run: choco install ninja -y
+
+      - name: Configure CMake
+        run: |
+          mkdir build
+          cd build
+          cmake -G Ninja `
+            -DCMAKE_BUILD_TYPE=Release `
+            -DCMAKE_C_COMPILER=cl `
+            -DCMAKE_CXX_COMPILER=cl `
+            ..
+
+      - name: Build
+        run: |
+          cd build
+          ninja -j4
+
+      - name: Upload DLL
+        uses: actions/upload-artifact@v4
+        with:
+          name: Flarial_JumpOnHit
+          path: build/Flarial.dll
